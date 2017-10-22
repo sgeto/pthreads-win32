@@ -8,11 +8,16 @@
 DLL_VER	= 2$(EXTRAVERSION)
 DLL_VERD= $(DLL_VER)d
 
-DESTROOT	= ..\PTHREADS-BUILT
+DESTROOT = PTHREADS-BUILT
 DEST_LIB_NAME = pthread.lib
+STATIC_LIB_PREFIX = lib
 
-DLLDEST	= $(DESTROOT)\bin
-LIBDEST	= $(DESTROOT)\lib
+!if "$(PLATFORM)" == "x64"
+MACHINE    = \amd64
+!endif
+
+DLLDEST	= $(DESTROOT)\bin$(MACHINE)
+LIBDEST	= $(DESTROOT)\lib$(MACHINE)
 HDRDEST	= $(DESTROOT)\include
 
 DLLS					= pthreadVCE$(DLL_VER).dll pthreadVSE$(DLL_VER).dll pthreadVC$(DLL_VER).dll \
@@ -79,13 +84,19 @@ help:
 #	@ echo nmake clean VSE-small-static
 #	@ echo nmake clean VSE-small-static-debug
 
-all:
+all: realclean
 	$(MAKE) /E clean VCE
 	$(MAKE) /E clean VSE
 	$(MAKE) /E clean VC
 	$(MAKE) /E clean VCE-debug
 	$(MAKE) /E clean VSE-debug
 	$(MAKE) /E clean VC-debug
+	$(MAKE) /E clean VCE-static
+	$(MAKE) /E clean VSE-static
+	$(MAKE) /E clean VC-static
+	$(MAKE) /E clean VCE-static-debug
+	$(MAKE) /E clean VSE-static-debug
+	$(MAKE) /E clean VC-static-debug
 
 TEST_ENV = CFLAGS="$(CFLAGS) /DNO_ERROR_DIALOGS"
 
@@ -184,6 +195,7 @@ VC-static-debug:
 realclean: clean
 	if exist *.dll del *.dll
 	if exist *.lib del *.lib
+	if exist *.pdb del *.pdb
 	if exist *.a del *.a
 	if exist *.manifest del *.manifest
 	if exist *_stamp del *_stamp
@@ -194,7 +206,7 @@ clean:
 	if exist *.obj del *.obj
 	if exist *.def del *.def
 	if exist *.ilk del *.ilk
-	if exist *.pdb del *.pdb
+#	if exist *.pdb del *.pdb
 	if exist *.exp del *.exp
 	if exist *.map del *.map
 	if exist *.o del *.o
@@ -203,30 +215,36 @@ clean:
 
 # Very basic install. It assumes "realclean" was done just prior to build target if
 # you want the installed $(DEVDEST_LIB_NAME) to match that build.
-install:
+install: all
 	if not exist $(DLLDEST) mkdir $(DLLDEST)
 	if not exist $(LIBDEST) mkdir $(LIBDEST)
 	if not exist $(HDRDEST) mkdir $(HDRDEST)
 	if exist pthreadV*.dll copy pthreadV*.dll $(DLLDEST)
+	if exist pthreadV*.pdb copy pthreadV*.pdb $(DLLDEST)
+	if exist libpthreadV*.lib copy libpthreadV*.lib $(LIBDEST)
 	copy pthreadV*.lib $(LIBDEST)
 	copy _ptw32.h $(HDRDEST)
 	copy pthread.h $(HDRDEST)
 	copy sched.h $(HDRDEST)
 	copy semaphore.h $(HDRDEST)
-	if exist pthreadVC$(DLL_VER).lib copy pthreadVC$(DLL_VER).lib $(LIBDEST)\$(DEST_LIB_NAME)
-	if exist pthreadVC$(DLL_VERD).lib copy pthreadVC$(DLL_VERD).lib $(LIBDEST)\$(DEST_LIB_NAME)
-	if exist pthreadVCE$(DLL_VER).lib copy pthreadVCE$(DLL_VER).lib $(LIBDEST)\$(DEST_LIB_NAME)
-	if exist pthreadVCE$(DLL_VERD).lib copy pthreadVCE$(DLL_VERD).lib $(LIBDEST)\$(DEST_LIB_NAME)
-	if exist pthreadVSE$(DLL_VER).lib copy pthreadVSE$(DLL_VER).lib $(LIBDEST)\$(DEST_LIB_NAME)
-	if exist pthreadVSE$(DLL_VERD).lib copy pthreadVSE$(DLL_VERD).lib $(LIBDEST)\$(DEST_LIB_NAME)
+
+uninstall:
+	if exist "$(DLLDEST)\pthreadV*.dll" del  "$(DLLDEST)\pthreadV*.dll"
+	if exist "$(DLLDEST)\pthreadV*.pdb" del  "$(DLLDEST)\pthreadV*.pdb"
+	if exist "$(LIBDEST)\libpthreadV*.lib" del "$(LIBDEST)\libpthreadV*.lib"
+	if exist "$(LIBDEST)\pthreadV*.lib" del "$(LIBDEST)\pthreadV*.lib"
+	if exist "$(HDRDEST)\_ptw32.h" del "$(HDRDEST)\_ptw32.h"
+	if exist "$(HDRDEST)\pthread.h" del "$(HDRDEST)\pthread.h"
+	if exist "$(HDRDEST)\sched.h" del "$(HDRDEST)\sched.h"
+	if exist "$(HDRDEST)\semaphore.h" del "$(HDRDEST)\semaphore.h"
 
 $(DLLS): $(DLL_OBJS)
-	$(CC) /LDd /Zi /nologo $(DLL_OBJS) /link /implib:$*.lib $(XLIBS) /out:$@
+	$(CC) /LDd /ZI /nologo $(DLL_OBJS) /link /implib:$*.lib $(XLIBS) /out:$@
 
 $(INLINED_STATIC_STAMPS): $(DLL_OBJS)
-	if exist $*.lib del $*.lib
-	lib $(DLL_OBJS) /out:$*.lib
-	echo. >$@
+	if exist $(STATIC_LIB_PREFIX)$*.lib del $(STATIC_LIB_PREFIX)$*.lib
+	lib $(DLL_OBJS) /out:$(STATIC_LIB_PREFIX)$*.lib
+	echo. >$(STATIC_LIB_PREFIX)$@
 
 $(SMALL_STATIC_STAMPS): $(STATIC_OBJS)
 	if exist $*.lib del $*.lib
