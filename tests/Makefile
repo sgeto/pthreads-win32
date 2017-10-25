@@ -203,23 +203,23 @@ VCX-static-debug VCX-small-static-debug:
 	@ $(MAKE) /E /nologo TEST="$@" CPLIB="$(VCLIBD)" CPDLL="" EHFLAGS="$(VCXFLAGS) /DPTW32_STATIC_LIB" allpassed
 
 clean:
-	if exist *.dll $(RM) *.dll
-	if exist *.lib $(RM) *.lib
-	if exist _ptw32.h $(RM) _ptw32.h
-	if exist pthread.h $(RM) pthread.h
-	if exist semaphore.h $(RM) semaphore.h
-	if exist sched.h $(RM) sched.h
-	if exist *.e $(RM) *.e
-	if exist *.i $(RM) *.i
-	if exist *.obj $(RM) *.obj
-	if exist *.pdb $(RM) *.pdb
-	if exist *.o $(RM) *.o
-	if exist *.asm $(RM) *.asm
-	if exist *.exe $(RM) *.exe
-	if exist *.manifest $(RM) *.manifest
-	if exist *.pass $(RM) *.pass
-	if exist *.bench $(RM) *.bench
-	if exist *.log $(RM) *.log
+	@if exist *.dll $(RM) *.dll
+	@if exist *.lib $(RM) *.lib
+	@if exist _ptw32.h $(RM) _ptw32.h
+	@if exist pthread.h $(RM) pthread.h
+	@if exist semaphore.h $(RM) semaphore.h
+	@if exist sched.h $(RM) sched.h
+	@if exist *.e $(RM) *.e
+	@if exist *.i $(RM) *.i
+	@if exist *.obj $(RM) *.obj
+	@if exist *.pdb $(RM) *.pdb
+	@if exist *.o $(RM) *.o
+	@if exist *.asm $(RM) *.asm
+	@if exist *.exe $(RM) *.exe
+	@if exist *.manifest $(RM) *.manifest
+	@if exist *.pass $(RM) *.pass
+	@if exist *.bench $(RM) *.bench
+	@if exist *.log $(RM) *.log
 
 .c.pass:
 	$(CC) $(EHFLAGS) $(CFLAGS) $(INCLUDES) $*.c /Fe$*.exe /link $(LFLAGS) $(CPLIB) $(XXLIBS)

@@ -8,17 +8,30 @@
 DLL_VER	= 2$(EXTRAVERSION)
 DLL_VERD= $(DLL_VER)d
 
+# set this to 0 to minimize this Makefiles output during build
+DEBUG_BUILDING = 1
+
+CP = xcopy /Q /Y /R /V
+MAKE = nmake /nologo
+RC = rc /nologo
+LIBB = lib /nologo
+
+!IF DEFINED(SYSINSTALL) || DEFINED(SYSUNINSTALL)
+# This needs Admin right... and quoting
+DESTROOT = $(VCINSTALLDIR)
+!else
 DESTROOT = PTHREADS-BUILT
+!endif
 DEST_LIB_NAME = pthread.lib
 STATIC_LIB_PREFIX = lib
 
 !if "$(PLATFORM)" == "x64"
-MACHINE    = \amd64
+MACHINE = \amd64
 !endif
 
-DLLDEST	= $(DESTROOT)\bin$(MACHINE)
-LIBDEST	= $(DESTROOT)\lib$(MACHINE)
-HDRDEST	= $(DESTROOT)\include
+DLLDEST = "$(DESTROOT)\bin$(MACHINE)"
+LIBDEST = "$(DESTROOT)\lib$(MACHINE)"
+HDRDEST = "$(DESTROOT)\include"
 
 DLLS					= pthreadVCE$(DLL_VER).dll pthreadVSE$(DLL_VER).dll pthreadVC$(DLL_VER).dll \
 						  pthreadVCE$(DLL_VERD).dll pthreadVSE$(DLL_VERD).dll pthreadVC$(DLL_VERD).dll
@@ -29,7 +42,7 @@ SMALL_STATIC_STAMPS		= pthreadVCE$(DLL_VER).small_static_stamp pthreadVSE$(DLL_V
 						  pthreadVC$(DLL_VER).small_static_stamp pthreadVCE$(DLL_VERD).small_static_stamp \
 						  pthreadVSE$(DLL_VERD).small_static_stamp pthreadVC$(DLL_VERD).small_static_stamp
 
-CC	= cl
+CC	= cl /nologo /MP
 CPPFLAGS = /I. /DHAVE_CONFIG_H
 XCFLAGS = /W3 /MD /nologo
 CFLAGS	= /O2 /Ob2 $(XCFLAGS)
@@ -85,18 +98,18 @@ help:
 #	@ echo nmake clean VSE-small-static-debug
 
 all: realclean
-	$(MAKE) /E clean VCE
-	$(MAKE) /E clean VSE
-	$(MAKE) /E clean VC
-	$(MAKE) /E clean VCE-debug
-	$(MAKE) /E clean VSE-debug
-	$(MAKE) /E clean VC-debug
-	$(MAKE) /E clean VCE-static
-	$(MAKE) /E clean VSE-static
-	$(MAKE) /E clean VC-static
-	$(MAKE) /E clean VCE-static-debug
-	$(MAKE) /E clean VSE-static-debug
-	$(MAKE) /E clean VC-static-debug
+	@ $(MAKE) /E clean VCE
+	@ $(MAKE) /E clean VSE
+	@ $(MAKE) /E clean VC
+	@ $(MAKE) /E clean VCE-debug
+	@ $(MAKE) /E clean VSE-debug
+	@ $(MAKE) /E clean VC-debug
+	@ $(MAKE) /E clean VCE-static
+	@ $(MAKE) /E clean VSE-static
+	@ $(MAKE) /E clean VC-static
+	@ $(MAKE) /E clean VCE-static-debug
+	@ $(MAKE) /E clean VSE-static-debug
+	@ $(MAKE) /E clean VC-static-debug
 
 TEST_ENV = CFLAGS="$(CFLAGS) /DNO_ERROR_DIALOGS"
 
@@ -125,31 +138,57 @@ all-tests:
 	@ echo $@ completed successfully.
 
 all-tests-cflags:
+# XXX - setenv isn't a thing anymore on newer MSVC toolchains
 	@ -$(SETENV)
 	$(MAKE) all-tests XCFLAGS="/W3 /WX /MD /nologo"
 	$(MAKE) all-tests XCFLAGS="/W3 /WX /MT /nologo"
 !IF DEFINED(MORE_EXHAUSTIVE)
+# MORE_EXHAUSTIVE takes a few hours to run!
 	$(MAKE) all-tests XCFLAGS="/W3 /WX /MDd /nologo" XDBG="-debug"
 	$(MAKE) all-tests XCFLAGS="/W3 /WX /MTd /nologo" XDBG="-debug"
 !ENDIF
 	@ echo $@ completed successfully.
 
 VCE:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VCEFLAGS) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_CXX pthreadVCE$(DLL_VER).dll
 
 VCE-debug:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VCEFLAGSD) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_CXX pthreadVCE$(DLL_VERD).dll
 
 VSE:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VSEFLAGS) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_SEH pthreadVSE$(DLL_VER).dll
 
 VSE-debug:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VSEFLAGSD) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_SEH pthreadVSE$(DLL_VERD).dll
 
 VC:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VCFLAGS) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_C pthreadVC$(DLL_VER).dll
 
 VC-debug:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building pthread$@...
+!ENDIF
 	@ $(MAKE) /E /nologo EHFLAGS="$(VCFLAGSD) /DPTW32_BUILD_INLINED" CLEANUP=__CLEANUP_C pthreadVC$(DLL_VERD).dll
 
 #
@@ -193,25 +232,25 @@ VC-static-debug:
 
 
 realclean: clean
-	if exist *.dll del *.dll
-	if exist *.lib del *.lib
-	if exist *.pdb del *.pdb
-	if exist *.a del *.a
-	if exist *.manifest del *.manifest
-	if exist *_stamp del *_stamp
-	if exist make.log.txt del make.log.txt
+	@if exist *.dll del *.dll
+	@if exist *.lib del *.lib
+	@if exist *.pdb del *.pdb
+	@if exist *.a del *.a
+	@if exist *.manifest del *.manifest
+	@if exist *_stamp del *_stamp
+	@if exist make.log.txt del make.log.txt
 	cd tests && $(MAKE) clean
 
 clean:
-	if exist *.obj del *.obj
-	if exist *.def del *.def
-	if exist *.ilk del *.ilk
+	@if exist *.obj del *.obj
+	@if exist *.def del *.def
+	@if exist *.ilk del *.ilk
 #	if exist *.pdb del *.pdb
-	if exist *.exp del *.exp
-	if exist *.map del *.map
-	if exist *.o del *.o
-	if exist *.i del *.i
-	if exist *.res del *.res
+	@if exist *.exp del *.exp
+	@if exist *.map del *.map
+	@if exist *.o del *.o
+	@if exist *.i del *.i
+	@if exist *.res del *.res
 
 # Very basic install. It assumes "realclean" was done just prior to build target if
 # you want the installed $(DEVDEST_LIB_NAME) to match that build.
@@ -219,14 +258,17 @@ install: all
 	if not exist $(DLLDEST) mkdir $(DLLDEST)
 	if not exist $(LIBDEST) mkdir $(LIBDEST)
 	if not exist $(HDRDEST) mkdir $(HDRDEST)
-	if exist pthreadV*.dll copy pthreadV*.dll $(DLLDEST)
-	if exist pthreadV*.pdb copy pthreadV*.pdb $(DLLDEST)
-	if exist libpthreadV*.lib copy libpthreadV*.lib $(LIBDEST)
-	copy pthreadV*.lib $(LIBDEST)
-	copy _ptw32.h $(HDRDEST)
-	copy pthread.h $(HDRDEST)
-	copy sched.h $(HDRDEST)
-	copy semaphore.h $(HDRDEST)
+	if exist pthreadV*.dll $(CP) pthreadV*.dll $(DLLDEST)
+	if exist pthreadV*.pdb $(CP) pthreadV*.pdb $(DLLDEST)
+	if exist libpthreadV*.lib $(CP) libpthreadV*.lib $(LIBDEST)
+	$(CP) pthreadV*.lib $(LIBDEST)
+	$(CP) _ptw32.h $(HDRDEST)
+	$(CP) pthread.h $(HDRDEST)
+	$(CP) sched.h $(HDRDEST)
+	$(CP) semaphore.h $(HDRDEST)
+!if "$(APPVEYOR)" == "True" || "$(DEPLOY)" == "1"
+	for %I in (ANNOUNCE BUGS ChangeLog CONTRIBUTORS COPYING COPYING.LIB COPYING.FSF FAQ MAINTAINERS NEWS PROGRESS README README.Borland README.CV README.NONPORTABLE README.Watcom README.WinCE WinCE-PORT) do $(CP) %I $(DESTROOT)
+!endif
 
 uninstall:
 	if exist "$(DLLDEST)\pthreadV*.dll" del  "$(DLLDEST)\pthreadV*.dll"
@@ -242,13 +284,17 @@ $(DLLS): $(DLL_OBJS)
 	$(CC) /LDd /ZI /nologo $(DLL_OBJS) /link /implib:$*.lib $(XLIBS) /out:$@
 
 $(INLINED_STATIC_STAMPS): $(DLL_OBJS)
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Building $@...
+!ENDIF
 	if exist $(STATIC_LIB_PREFIX)$*.lib del $(STATIC_LIB_PREFIX)$*.lib
-	lib $(DLL_OBJS) /out:$(STATIC_LIB_PREFIX)$*.lib
+	$(LIBB) $(DLL_OBJS) /out:$(STATIC_LIB_PREFIX)$*.lib
 	echo. >$(STATIC_LIB_PREFIX)$@
 
 $(SMALL_STATIC_STAMPS): $(STATIC_OBJS)
 	if exist $*.lib del $*.lib
-	lib $(STATIC_OBJS) /out:$*.lib
+	$(LIBB) $(STATIC_OBJS) /out:$*.lib
 	echo. >$@
 
 .c.obj:
@@ -263,14 +309,14 @@ $(SMALL_STATIC_STAMPS): $(STATIC_OBJS)
 .rc.res:
 !IF DEFINED(PLATFORM)
 !  IF DEFINED(PROCESSOR_ARCHITECTURE)
-	  rc /dPTW32_ARCH$(PROCESSOR_ARCHITECTURE) /dPTW32_RC_MSC /d$(CLEANUP) $<
+	  $(RC) /dPTW32_ARCH$(PROCESSOR_ARCHITECTURE) /dPTW32_RC_MSC /d$(CLEANUP) $<
 !  ELSE
-	  rc /dPTW32_ARCH$(PLATFORM) /dPTW32_RC_MSC /d$(CLEANUP) $<
+	  $(RC) /dPTW32_ARCH$(PLATFORM) /dPTW32_RC_MSC /d$(CLEANUP) $<
 !  ENDIF
 !ELSE IF DEFINED(TARGET_CPU)
-	rc /dPTW32_ARCH$(TARGET_CPU) /dPTW32_RC_MSC /d$(CLEANUP) $<
+	$(RC) /dPTW32_ARCH$(TARGET_CPU) /dPTW32_RC_MSC /d$(CLEANUP) $<
 !ELSE
-	rc /dPTW32_ARCHx86 /dPTW32_RC_MSC /d$(CLEANUP) $<
+	$(RC) /dPTW32_ARCHx86 /dPTW32_RC_MSC /d$(CLEANUP) $<
 !ENDIF
 
 .c.i:
