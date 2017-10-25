@@ -21,5 +21,7 @@ config\.log
 autom4te\.cache/
 GNUmakefile
 PTHREADS-BUILT/
-config\.h
+PTHREADS-BUILT-MinGW/
 *.sys
+*.inlined_static_stamp
+
