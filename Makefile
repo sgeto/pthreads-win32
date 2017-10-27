@@ -43,7 +43,7 @@ SMALL_STATIC_STAMPS		= pthreadVCE$(DLL_VER).small_static_stamp pthreadVSE$(DLL_V
 						  pthreadVSE$(DLL_VERD).small_static_stamp pthreadVC$(DLL_VERD).small_static_stamp
 
 CC	= cl /nologo /MP
-CPPFLAGS = /I. /DHAVE_CONFIG_H
+CPPFLAGS = /I. /FIwinconfig.h
 XCFLAGS = /W3 /MD /nologo
 CFLAGS	= /O2 /Ob2 $(XCFLAGS)
 CFLAGSD	= /Z7 $(XCFLAGS)
