@@ -32,6 +32,15 @@ MACHINE = \amd64
 DLLDEST = "$(DESTROOT)\bin$(MACHINE)"
 LIBDEST = "$(DESTROOT)\lib$(MACHINE)"
 HDRDEST = "$(DESTROOT)\include"
+!if DEFINED(CMAKEDEST)
+# if defined on the command line, $(CMAKEDEST) should point to the 
+# "Modules" folder of you cmake installation
+# XXX - this should be more flexible (no version)
+#       Also find out a way to determine cmake's default install location
+CMAKEDEST = "$(CMAKEDEST)"
+!ELSEIF DEFINED(CMAKEDEST) && !DEFINED(SYSINSTALL)
+CMAKEDEST = $(DESTROOT)cmake\share\cmake-3.8\Modules
+!ENDIF
 
 DLLS					= pthreadVCE$(DLL_VER).dll pthreadVSE$(DLL_VER).dll pthreadVC$(DLL_VER).dll \
 						  pthreadVCE$(DLL_VERD).dll pthreadVSE$(DLL_VERD).dll pthreadVC$(DLL_VERD).dll
@@ -266,6 +275,12 @@ install: all
 	$(CP) pthread.h $(HDRDEST)
 	$(CP) sched.h $(HDRDEST)
 	$(CP) semaphore.h $(HDRDEST)
+!IF DEFINED(CMAKEDEST)
+# XXX - FIX ME!
+# if not exist $(CMAKEDEST) mkdir $(CMAKEDEST)
+	$(CP) contrib\FindPTHREADS-WIN32.cmake "$(CMAKEDEST)\FindPTHREADS-WIN32.cmake"
+	$(CP) contrib\FindPTHREADS.cmake "$(CMAKEDEST)\FindPTHREADS4W.cmake"
+!ENDIF
 !if "$(APPVEYOR)" == "True" || "$(DEPLOY)" == "1"
 	for %I in (ANNOUNCE BUGS ChangeLog CONTRIBUTORS COPYING COPYING.LIB COPYING.FSF FAQ MAINTAINERS NEWS PROGRESS README README.Borland README.CV README.NONPORTABLE README.Watcom README.WinCE WinCE-PORT) do $(CP) %I $(DESTROOT)
 !endif
