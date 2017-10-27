@@ -22,6 +22,7 @@ config\.h
 config\.h\.in~
 autom4te\.cache/
 GNUmakefile
+!contrib/QueueUserAPCEx/*makefile
 PTHREADS-BUILT/
 PTHREADS-BUILT-MinGW/
 *.sys
