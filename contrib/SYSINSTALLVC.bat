@@ -6,13 +6,13 @@
 :: - needs admin rights (obviously)
 
 @echo off
+set Platform=
 setlocal
 
 set THISAPP=pthreads-win32
 for /f "tokens=* usebackq" %%F in (`git describe`) do (set GITVERSION=%%F)
 REM set GITVERSION=%THISAPP% %%G
-
-set BUILDDIR=..\..\
+set BUILDDIR=..
 set UNIQUEFILE=pthread.h
 set NMAKE=nmake /NOLOGO /G /ERRORREPORT:NONE 
 set VSVERSION=14.0
@@ -39,7 +39,7 @@ set MACHINE=x86 x86_amd64
 
 @for %%i in (%MACHINE%) do (
     @echo Building %THISAPP% for %%i
-    @echo ===============================
+    @echo =====================================
     @echo.
     @echo Version                = %GITVERSION%
     @echo vcvarsall.bat          = %VCVARSALL% %%i
