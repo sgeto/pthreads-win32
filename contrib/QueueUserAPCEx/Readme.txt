@@ -1,3 +1,5 @@
+An update and some more infos are available here: https://www.codeproject.com/Articles/7238/QueueUserAPCEx-Version-Truly-Asynchronous-User-M
+
 TEST PLATFORM:
 Windows XP Home, Microsoft Visual C++ 6.0, Drivers Development Kit
 (Windows 2000 DDK).
