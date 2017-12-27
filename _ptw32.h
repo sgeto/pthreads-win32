@@ -120,6 +120,7 @@
 /*
  * This is more or less a duplicate of what is in the autoconf config.h,
  * which is only used when building the pthread-win32 libraries. They
+ * XXX - They? They what?
  */
 
 #if !defined(PTW32_CONFIG_H) && !defined(__PTW32_PSEUDO_CONFIG_H_SOURCED)

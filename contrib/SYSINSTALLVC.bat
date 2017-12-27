@@ -24,12 +24,13 @@ set MACHINE=x86 x86_amd64
 
 :: checking supplied options
 @if "%1"=="clean" goto :CLEAN
+@if "%1"=="cmake" goto :CMAKE
 @if "%1"=="noinstall" goto :BUILD
 @if "%1"=="uninstall" goto :UNINSTALL
 @if not "%1"=="NOSYS" (
     set SYSINSTALL=SYSINSTALL=true
     shift)
-@if not "%1"=="" @if not "%1"=="clean" @if not "%1"=="uninstall" @if not "%1"=="noinstall" goto :USAGE
+@if not "%1"=="" @if not "%1"=="cmake" @if not "%1"=="clean" @if not "%1"=="uninstall" @if not "%1"=="noinstall" goto :USAGE
 @if errorlevel 1 goto :BAD
 
 :BUILD
@@ -65,6 +66,19 @@ if errorlevel 1 goto :BAD
 @pause
 @goto :eof
 
+:CMAKE
+@color
+@echo.
+@echo Installing cmake find modules...
+cmakelint --spaces=2 --filter=-package FindPTHREADS-WIN32.cmake
+if errorlevel 1 goto :BAD
+%NMAKE% cmake %CMAKEDEST%
+if errorlevel 1 goto :BAD
+@echo.
+@echo Done.
+@pause
+@goto :eof
+
 :CLEAN
 @color
 @echo.
@@ -81,7 +95,7 @@ if errorlevel 1 goto :BAD
 @echo.
 @echo Invalid option "%*"
 @echo.
-@echo Usage: %~nx0 [clean] ^| [uninstall] ^| [noinstall] ^| [nosys]
+@echo Usage: %~nx0 [clean] ^| [uninstall] ^| [noinstall] ^| [nosys] ^|[cmake]
 @echo Execute this file without options to build and install %THISAPP%
 @echo to your compiler search path [%VSINSTALLDIR%VC\]
 @goto :eof

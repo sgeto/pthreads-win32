@@ -168,7 +168,7 @@ GCE_CFLAGS	= $(PTW32_FLAGS) -mthreads
 ## Mingw
 #MAKE		?= make
 DEFS = @DEFS@ -DPTW32_BUILD
-CFLAGS	= $(OPT) $(XOPT) $(ARCH) -I. -I${srcdir} $(DEFS) -Wall
+CFLAGS	= $(OPT) $(XOPT) $(ARCH) -I. -I${srcdir} $(DEFS) -Wall 
 
 OBJEXT = @OBJEXT@
 RESEXT = @OBJEXT@

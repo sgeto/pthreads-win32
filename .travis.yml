@@ -11,48 +11,28 @@ branches:
 
 env:
   global:
-  - GNUMAKEFLAGS='--jobs --no-print-directory --environment-overrides --warn-undefined-variables'
-  - CFLAGS='-Wall --coverage'
+    - CODECOV_TOKEN=:1eef4895-a479-44ae-aade-af4d1c5dc286
 
-matrix:
-# Don't wait for "allow_failures" to finish
-  fast_finish: true
-  allow_failures:
-include:
-  - compiler: ": x64"
-    env: PLATFORM="mingw32" ARCH="x86_64" BITSIZE=64 HOST="x86_64"
-  - compiler: ": x86"
-    env: PLATFORM="mingw32" ARCH="x86" BITSIZE=32 HOST="i686"
+env:
+  - PLATFORM="mingw64" BITSIZE=64 HOST="x86_64-w64-mingw32"
+  - PLATFORM="mingw32" BITSIZE=32 HOST="i686-w64-mingw32"
 
 addons:
   apt:
-    sources:
-# https://launchpad.net/~tobydox/+archive/ubuntu/mingw-x-trusty
-      - tobydox/mingw-x-trusty
     packages:
-      - mingw32-x-binutils
-      - mingw32-x-gcc
-      - mingw32-x-runtime
-      - mingw64-x-binutils
-      - mingw64-x-gcc
-      - mingw64-x-runtime
+      - mingw-w64
 
-before_install:
-# Some useful feedback of where/who we are
-  - env | sort
-  - echo $TRAVIS_BUILD_DIR
-  - echo $TRAVIS_OS_NAME
-
+before_script:
+  - export CC=$HOST-gcc CXX=$HOST-g++
+  - export GNUMAKEFLAGS='--jobs --no-print-directory --environment-overrides --warn-undefined-variables'
 script:
-  - export MINGW=/opt/mingw$BITSIZE PATH=$MINGW/bin:$PATH CC=$HOST-w64-mingw32-gcc CXX=$HOST-w64-mingw32-g++
   # - autoreconf -iv > build.log 2>&1 || (cat build.log && exit 1)
-  - ./configure > build.log 2>&1 || (cat build.log && exit 1)
-  - make VERBOSE=1 > build.log 2>&1 || (cat build.log && exit 1)
-  # - make dist > build.log 2>&1 || (cat build.log && exit 1)
-  # - sudo make test
+  - ./configure --host=$HOST >> build.log 2>&1 || (cat build.log && exit 1)
+  - make all VERBOSE=1 >> build.log 2>&1 || (cat build.log && exit 1)
+  # - make dist >> build.log 2>&1 || (cat build.log && exit 1)
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - curl --upload-file ./build.log https://transfer.sh/build.log
 
 before_deploy: echo 'ready?'
 

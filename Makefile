@@ -7,39 +7,61 @@
 # See pthread.h and README for the description of version numbering.
 DLL_VER	= 2$(EXTRAVERSION)
 DLL_VERD= $(DLL_VER)d
+FINDPTHREADS=contrib\FindPTHREADS-WIN32.cmake
 
-# set this to 0 to minimize this Makefiles output during build
+# set this to 0 to minimize this Makefile's output during build
 DEBUG_BUILDING = 1
 
-CP = xcopy /Q /Y /R /V
+!IF DEFINED(STATIC_BUILDING) || DEFINED(DEPLOY) || DEFINED(APPVEYOR) || DEFINED(SYSINSTALL) || DEFINED(SYSUNINSTALL)
+# set this to 0 to skip building static libraries
+STATIC_BUILDING = 1
+# for static libraries and import libraries to be able to
+# coexist in $(DEST_LIB_NAME)lib,the static libraries will
+# have a "lib" prefix
+STATIC_LIB_PREFIX = lib
+!ENDIF
+
+CP = xcopy /Q /Y /R
 MAKE = nmake /nologo
 RC = rc /nologo
 LIBB = lib /nologo
 
+# Using dynamic runtime by default
+RUNTIME = MD
+
 !IF DEFINED(SYSINSTALL) || DEFINED(SYSUNINSTALL)
-# This needs Admin right... and quoting
+# These need Admin right... and quoting
 DESTROOT = $(VCINSTALLDIR)
-!else
+SYSROOT = $(SYSTEMROOT)\System32
+DLLDEST = $(DESTROOT)bin$(MACHINE)
+LIBDEST = $(DESTROOT)lib$(MACHINE)
+HDRDEST = $(DESTROOT)include
+!ELSE
 DESTROOT = PTHREADS-BUILT
-!endif
+DLLDEST = $(DESTROOT)\bin$(MACHINE)
+LIBDEST = $(DESTROOT)\lib$(MACHINE)
+HDRDEST = $(DESTROOT)\include
+DATADEST = $(DESTROOT)pthreads-win32\share
+!ENDIF
+
 DEST_LIB_NAME = pthread.lib
 STATIC_LIB_PREFIX = lib
 
-!if "$(PLATFORM)" == "x64"
+!IF "$(PLATFORM)" == "x64"
 MACHINE = \amd64
-!endif
+!ENDIF
 
-DLLDEST = "$(DESTROOT)\bin$(MACHINE)"
-LIBDEST = "$(DESTROOT)\lib$(MACHINE)"
-HDRDEST = "$(DESTROOT)\include"
-!if DEFINED(CMAKEDEST)
+!IF DEFINED(CMAKEDEST)
 # if defined on the command line, $(CMAKEDEST) should point to the 
 # "Modules" folder of you cmake installation
 # XXX - this should be more flexible (no version)
 #       Also find out a way to determine cmake's default install location
-CMAKEDEST = "$(CMAKEDEST)"
-!ELSEIF DEFINED(CMAKEDEST) && !DEFINED(SYSINSTALL)
-CMAKEDEST = $(DESTROOT)cmake\share\cmake-3.8\Modules
+CMAKEDEST = $(CMAKEDEST)
+!ELSEIF DEFINED(CMAKEDEST) || DEFINED(DEPLOY) && !DEFINED(SYSINSTALL)
+CMAKEDEST = $(DATADEST)\cmake\modules
+!ELSE !DEFINED(CMAKEDEST) && (DEFINED(SYSINSTALL) || DEFINED(SYSUNINSTALL))
+# XXX - assuming x64 host
+CMAKEDEST = $(ProgramFiles(x86)\CMake
 !ENDIF
 
 DLLS					= pthreadVCE$(DLL_VER).dll pthreadVSE$(DLL_VER).dll pthreadVC$(DLL_VER).dll \
@@ -53,7 +75,7 @@ SMALL_STATIC_STAMPS		= pthreadVCE$(DLL_VER).small_static_stamp pthreadVSE$(DLL_V
 
 CC	= cl /nologo /MP
 CPPFLAGS = /I. /FIwinconfig.h
-XCFLAGS = /W3 /MD /nologo
+XCFLAGS = /W3 /$(RUNTIME)
 CFLAGS	= /O2 /Ob2 $(XCFLAGS)
 CFLAGSD	= /Z7 $(XCFLAGS)
 
@@ -113,12 +135,14 @@ all: realclean
 	@ $(MAKE) /E clean VCE-debug
 	@ $(MAKE) /E clean VSE-debug
 	@ $(MAKE) /E clean VC-debug
+!IF DEFINED(STATIC_BUILDING)
 	@ $(MAKE) /E clean VCE-static
 	@ $(MAKE) /E clean VSE-static
 	@ $(MAKE) /E clean VC-static
 	@ $(MAKE) /E clean VCE-static-debug
 	@ $(MAKE) /E clean VSE-static-debug
 	@ $(MAKE) /E clean VC-static-debug
+!ENDIF
 
 TEST_ENV = CFLAGS="$(CFLAGS) /DNO_ERROR_DIALOGS"
 
@@ -241,6 +265,10 @@ VC-static-debug:
 
 
 realclean: clean
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Running $@...
+!ENDIF
 	@if exist *.dll del *.dll
 	@if exist *.lib del *.lib
 	@if exist *.pdb del *.pdb
@@ -251,6 +279,10 @@ realclean: clean
 	cd tests && $(MAKE) clean
 
 clean:
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Running $@...
+!ENDIF
 	@if exist *.obj del *.obj
 	@if exist *.def del *.def
 	@if exist *.ilk del *.ilk
@@ -264,36 +296,70 @@ clean:
 # Very basic install. It assumes "realclean" was done just prior to build target if
 # you want the installed $(DEVDEST_LIB_NAME) to match that build.
 install: all
-	if not exist $(DLLDEST) mkdir $(DLLDEST)
-	if not exist $(LIBDEST) mkdir $(LIBDEST)
-	if not exist $(HDRDEST) mkdir $(HDRDEST)
-	if exist pthreadV*.dll $(CP) pthreadV*.dll $(DLLDEST)
-	if exist pthreadV*.pdb $(CP) pthreadV*.pdb $(DLLDEST)
-	if exist libpthreadV*.lib $(CP) libpthreadV*.lib $(LIBDEST)
-	$(CP) pthreadV*.lib $(LIBDEST)
-	$(CP) _ptw32.h $(HDRDEST)
-	$(CP) pthread.h $(HDRDEST)
-	$(CP) sched.h $(HDRDEST)
-	$(CP) semaphore.h $(HDRDEST)
-!IF DEFINED(CMAKEDEST)
-# XXX - FIX ME!
-# if not exist $(CMAKEDEST) mkdir $(CMAKEDEST)
-	$(CP) contrib\FindPTHREADS-WIN32.cmake "$(CMAKEDEST)\FindPTHREADS-WIN32.cmake"
-	$(CP) contrib\FindPTHREADS.cmake "$(CMAKEDEST)\FindPTHREADS4W.cmake"
+!IF DEFINED(SYSINSTALL)
+!IF "$(PLATFORM)" == "x64"
+	if exist pthreadV*.dll $(CP) pthreadV*.dll "$(SYSROOT)"
 !ENDIF
-!if "$(APPVEYOR)" == "True" || "$(DEPLOY)" == "1"
-	for %I in (ANNOUNCE BUGS ChangeLog CONTRIBUTORS COPYING COPYING.LIB COPYING.FSF FAQ MAINTAINERS NEWS PROGRESS README README.Borland README.CV README.NONPORTABLE README.Watcom README.WinCE WinCE-PORT) do $(CP) %I $(DESTROOT)
-!endif
+!ELSE
+	if not exist "$(DLLDEST)" mkdir "$(DLLDEST)"
+	if not exist "$(LIBDEST)" mkdir "$(LIBDEST)"
+	if not exist "$(HDRDEST)" mkdir "$(HDRDEST)"
+!ENDIF
+	if exist pthreadV*.dll $(CP) pthreadV*.dll "$(DLLDEST)"
+	if exist pthreadV*.pdb $(CP) pthreadV*.pdb "$(DLLDEST)"
+	if exist libpthreadV*.lib $(CP) libpthreadV*.lib "$(LIBDEST)"
+	$(CP) pthreadV*.lib "$(LIBDEST)"
+	$(CP) _ptw32.h "$(HDRDEST)"
+	$(CP) pthread.h "$(HDRDEST)"
+	$(CP) sched.h "$(HDRDEST)"
+	$(CP) semaphore.h "$(HDRDEST)"
+!IF DEFINED(CMAKEDEST) || DEFINED(DEPLOY)
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Installing CMAKE Modules into $(CMAKEDEST)...
+!ENDIF
+# XXX - add a %pthread_root% environment variable
+	if not exist "$(CMAKEDEST)" mkdir "$(CMAKEDEST)"
+	$(CP) $(FINDPTHREADS) "$(CMAKEDEST)"
+	copy /Y $(FINDPTHREADS) "$(CMAKEDEST)\FindPTHREADS4W.cmake"
+!ENDIF
+!IF DEFINED(APPVEYOR) || DEFINED(DEPLOY)
+	for %I in (COPYING COPYING.FSF README README.Borland README.CV README.NONPORTABLE README.Watcom README.WinCE WinCE-PORT) do $(CP) %I "$(DESTROOT)"
+	for %I in (ANNOUNCE BUGS ChangeLog CONTRIBUTORS COPYING COPYING.FSF FAQ MAINTAINERS NEWS PROGRESS) do $(CP) %I "$(DATADEST)\doc"
+	copy /Y README.md "$(DESTROOT)\README.FIRST"
+	$(CP) /E /S /I manual "$(DATADEST)\manual"
+!ENDIF
 
 uninstall:
-	if exist "$(DLLDEST)\pthreadV*.dll" del  "$(DLLDEST)\pthreadV*.dll"
-	if exist "$(DLLDEST)\pthreadV*.pdb" del  "$(DLLDEST)\pthreadV*.pdb"
-	if exist "$(LIBDEST)\libpthreadV*.lib" del "$(LIBDEST)\libpthreadV*.lib"
-	if exist "$(LIBDEST)\pthreadV*.lib" del "$(LIBDEST)\pthreadV*.lib"
-	if exist "$(HDRDEST)\_ptw32.h" del "$(HDRDEST)\_ptw32.h"
-	if exist "$(HDRDEST)\pthread.h" del "$(HDRDEST)\pthread.h"
-	if exist "$(HDRDEST)\sched.h" del "$(HDRDEST)\sched.h"
-	if exist "$(HDRDEST)\semaphore.h" del "$(HDRDEST)\semaphore.h"
+!IF DEFINED(SYSUNINSTALL) || DEFINED(SYSINSTALL)
+	del "$(SYSROOT)\pthreadV*.dll"
+!ENDIF
+	del "$(DLLDEST)\pthreadV*.dll"
+	del "$(DLLDEST)\pthreadV*.pdb"
+	del "$(LIBDEST)\libpthreadV*.lib"
+	del "$(LIBDEST)\pthreadV*.lib"
+	del "$(HDRDEST)\_ptw32.h"
+	del "$(HDRDEST)\pthread.h"
+	del "$(HDRDEST)\sched.h"
+	del "$(HDRDEST)\semaphore.h"
+# XXX - remove!!! %pthread_root% environment variable
+	del "$(CMAKEDEST)\FindPTHREADS-WIN32.cmake"
+	del "$(CMAKEDEST)\FindPTHREADS4W.cmake"
+!IF DEFINED(APPVEYOR) || DEFINED(DEPLOY)
+	for %I in (ANNOUNCE BUGS ChangeLog CONTRIBUTORS COPYING COPYING.FSF FAQ MAINTAINERS NEWS PROGRESS README README.Borland README.CV README.NONPORTABLE README.Watcom README.WinCE WinCE-PORT) do del $(DESTROOT)\%I
+!ENDIF
+
+cmake:
+!IF DEFINED(CMAKEDEST) || DEFINED(DEPLOY)
+!IF DEFINED(DEBUG_BUILDING)
+	@ echo.
+	@ echo Installing CMAKE Modules into $(CMAKEDEST)...
+!ENDIF
+# XXX - add (and remove!!!) a %pthread_root% environment variable?
+	if not exist "$(CMAKEDEST)" mkdir "$(CMAKEDEST)"
+	$(CP) $(FINDPTHREADS) "$(CMAKEDEST)"
+	copy /Y $(FINDPTHREADS) "$(CMAKEDEST)\FindPTHREADS4W.cmake"
+!ENDIF
 
 $(DLLS): $(DLL_OBJS)
 	$(CC) /LDd /ZI /nologo $(DLL_OBJS) /link /implib:$*.lib $(XLIBS) /out:$@
@@ -301,7 +367,7 @@ $(DLLS): $(DLL_OBJS)
 $(INLINED_STATIC_STAMPS): $(DLL_OBJS)
 !IF DEFINED(DEBUG_BUILDING)
 	@ echo.
-	@ echo Building $@...
+	@ echo Building $(STATIC_LIB_PREFIX)$@...
 !ENDIF
 	if exist $(STATIC_LIB_PREFIX)$*.lib del $(STATIC_LIB_PREFIX)$*.lib
 	$(LIBB) $(DLL_OBJS) /out:$(STATIC_LIB_PREFIX)$*.lib
