@@ -1,0 +1,22 @@
+# Build image.
+image: Visual Studio 2017
+
+# XXX - add output of git describe instead? v-2-10-0-rc-36-g04af0b4
+# XXX isn't it 2.11.0?
+version: 2.10.0-{build}
+
+#
+# Skipping commits affecting these files
+#
+# XXX - add all the others
+skip_commits:
+   files:
+    - '**/*.README.*'
+    - '**/*.md'
+    - '**/*.png'
+    - '**/*.jpg'
+    - '**/*.html'
+
+build_script:
+  - cmd: nmake all
+  - cmd: nmake install
