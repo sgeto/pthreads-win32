@@ -49,7 +49,7 @@ OPTIM	= /O2 /Ob0
 XXLIBS	= ws2_32.lib
 
 # C++ Exceptions
-VCEFLAGS	= /EHs /TP /DPtW32NoCatchWarn /D__CLEANUP_CXX
+VCEFLAGS	= /EHs /TP /DPtW32NoCatchWarn /D__CLEANUP_CXX /FI..\winconfig.h
 VCELIB	= pthreadVCE$(DLL_VER).lib
 VCEDLL	= pthreadVCE$(DLL_VER).dll
 VCELIBD	= pthreadVCE$(DLL_VER)d.lib
@@ -61,13 +61,13 @@ VSEDLL	= pthreadVSE$(DLL_VER).dll
 VSELIBD	= pthreadVSE$(DLL_VER)d.lib
 VSEDLLD	= pthreadVSE$(DLL_VER)d.dll
 # C cleanup code
-VCFLAGS	= /D__CLEANUP_C
+VCFLAGS	= /D__CLEANUP_C /FI..\winconfig.h
 VCLIB	= pthreadVC$(DLL_VER).lib
 VCDLL	= pthreadVC$(DLL_VER).dll
 VCLIBD	= pthreadVC$(DLL_VER)d.lib
 VCDLLD	= pthreadVC$(DLL_VER)d.dll
 # C++ Exceptions in application - using VC version of pthreads dll
-VCXFLAGS	= /EHs /TP /D__CLEANUP_C
+VCXFLAGS	= /EHs /TP /D__CLEANUP_C /FI..\winconfig.h
 
 # Defaults
 CPLIB	= $(VCLIB)
@@ -222,7 +222,7 @@ clean:
 	@if exist *.log $(RM) *.log
 
 .c.pass:
-	$(CC) $(EHFLAGS) $(CFLAGS) $(INCLUDES) $*.c /Fe$*.exe /link $(LFLAGS) $(CPLIB) $(XXLIBS)
+	@ $(CC) $(EHFLAGS) $(CFLAGS) $(INCLUDES) $*.c /Fe$*.exe /link $(LFLAGS) $(CPLIB) $(XXLIBS)
 	@ $(ECHO) ... Running $(TEST) test: $*.exe
 	@ .\$*.exe
 	@ $(ECHO) ...... Passed

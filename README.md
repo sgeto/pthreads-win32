@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/sgeto/pthreads-win32.svg?branch=privat)](https://travis-ci.org/sgeto/pthreads-win32)
 [![Build status](https://ci.appveyor.com/api/projects/status/nvas416n8d4t48y0/branch/privat?svg=true)](https://ci.appveyor.com/project/sgeto/pthreads-win32/branch/privat)
-
+![License](https://img.shields.io/badge/License-LGPL%20v2.1-lightgrey.svg)
 
 Description
 Also known as "pthreads-win32", POSIX Threads for Windows implements a large subset of the threads related API from the Single Unix Specification Version 3.
