@@ -25,6 +25,8 @@ environment:
   global:
     CL: -nologo
     LINK: -nologo
+    ARCH1: x86
+    ARCH2: x86_amd64
     URL: "https://ci.appveyor.com/api/projects/%APPVEYOR_ACCOUNT_NAME%/pthreads-win32/artifacts/PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%.zip"
 
   matrix:
@@ -80,13 +82,19 @@ install:
   # - ps: if ($env:ARCH -eq "x86_amd64") {Invoke-WebRequest $env:URL}
   # - ps: if ($env:ARCH -eq "x86_amd64") {7z.exe x "PTHREADS-BUILT$env:APPVEYOR_BUILD_VERSION.zip"}
 # XXX - fix me!
-  - cmd: 'if "%ARCH%"=="x86_amd64" appveyor DownloadFile "%URL%" && 7z.exe x PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%.zip > NUL'
+  # - cmd: 'if "%ARCH%"=="x86_amd64" appveyor DownloadFile "%URL%" && 7z.exe x PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%.zip > NUL'
 
 # set compiler environment
-  - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH%
+  - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH1%
+  - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH1%
 
 build_script:
+# build for x86
+  - cmd: nmake /nologo install DEPLOY=1
+# set compiler environment
+  - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH2%
+  - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH2%
+# build for x86_amd64
   - cmd: nmake /nologo install DEPLOY=1
 
 test_script:
