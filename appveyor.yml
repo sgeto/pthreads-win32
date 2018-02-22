@@ -31,13 +31,7 @@ environment:
 
   matrix:
     - TOOLSET:        MSVC1910       #-1919 = Visual Studio 15.0/2017 (v141 toolset)
-      ARCH:           x86
-    - TOOLSET:        MSVC1910
-      ARCH:           x86_amd64
     - TOOLSET:        MSVC1900       # Visual Studio 14.0/2015 (v140 toolset)
-      ARCH:           x86
-    - TOOLSET:        MSVC1900
-      ARCH:           x86_amd64
     - TOOLSET:        MSVC1900
       ARCH:           x86_arm
     - TOOLSET:        MSVC1900
@@ -106,11 +100,11 @@ test_script:
 # Warning: MORE_EXHAUSTIVE takes a few hours to complete!
   # - cmd: nmake /nologo -DEXHAUSTIVE clean all-tests MORE_EXHAUSTIVE=1
 
-after_test:
-  - ps: |
-      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
-      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-      bash codecov.sh -f "coverage.xml" -t 1eef4895-a479-44ae-aade-af4d1c5dc286
+# after_test:
+  # - ps: |
+      # $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      # Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      # bash codecov.sh -f "coverage.xml" -t 1eef4895-a479-44ae-aade-af4d1c5dc286
 
 artifacts:
 # IMPORTANT! If the artifact path starts with * surround the value with single quotes.
