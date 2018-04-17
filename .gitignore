@@ -27,3 +27,4 @@ PTHREADS-BUILT/
 PTHREADS-BUILT-MinGW/
 *.sys
 *.inlined_static_stamp
+pthreads-w32-*-release
