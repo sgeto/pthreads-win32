@@ -1,7 +1,7 @@
 image:
   - Visual Studio 2017
 
-version: -v2.10.0
+version: 2.10.0-{build}
 
 branches:
   only:
@@ -66,7 +66,7 @@ test_script:
   # - cmd: nmake /nologo -DEXHAUSTIVE clean all-tests MORE_EXHAUSTIVE=1
 
 artifacts:
-  - path: 'pthreads-w32%APPVEYOR_BUILD_VERSION%-release'
+  - path: 'pthreads-w32-v2.10.0-release'
 
 
 notifications:
