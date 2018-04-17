@@ -1,9 +1,8 @@
-# Build image. Creates 4 build jobs
 image:
   - Visual Studio 2017
 
 # XXX isn't it 2.11.0?
-version: -v2.10.0-{build}
+version: -v2.10.0
 
 # Only build the 'privat' branch.
 branches:
@@ -11,7 +10,6 @@ branches:
     - privat
 
 # Skipping commits affecting these files
-# XXX - add all the others
 skip_commits:
    files:
     - '**/*.README.*'
@@ -27,7 +25,6 @@ environment:
     LINK: -nologo
     ARCH1: x86
     ARCH2: x86_amd64
-    URL: "https://ci.appveyor.com/api/projects/%APPVEYOR_ACCOUNT_NAME%/pthreads-win32/artifacts/PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%.zip"
 
   matrix:
     - TOOLSET:        MSVC1910       #-1919 = Visual Studio 15.0/2017 (v141 toolset)
@@ -54,30 +51,9 @@ matrix:
     - TOOLSET: MSVC1900
       ARCH:     amd64_arm
 
-init:
-# Carriage returns can be bad
-  - cmd: git config --global core.autocrlf input
-
 clone_folder: 'c:\%APPVEYOR_PROJECT_NAME%'
 
-# XXX - this will be the root prebuild output folder
-# Preserve "PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%" directory in the root of build folder
-cache: PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%
-
 install:
-# If there's a newer build queued for the same PR, cancel this one
-# XXX - change this to "If there's a newer build queued at all"
-  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
-        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
-        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
-        throw "There are newer queued builds for this pull request, failing early." }
-
-  # - ps: $url="https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/pthreads-win32/artifacts/PTHREADS-BUILT$env:APPVEYOR_BUILD_VERSION.zip"
-  # - ps: if ($env:ARCH -eq "x86_amd64") {Invoke-WebRequest $env:URL}
-  # - ps: if ($env:ARCH -eq "x86_amd64") {7z.exe x "PTHREADS-BUILT$env:APPVEYOR_BUILD_VERSION.zip"}
-# XXX - fix me!
-  # - cmd: 'if "%ARCH%"=="x86_amd64" appveyor DownloadFile "%URL%" && 7z.exe x PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%.zip > NUL'
-
 # set compiler environment
   - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH1%
   - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH1%
@@ -100,20 +76,14 @@ test_script:
 # Warning: MORE_EXHAUSTIVE takes a few hours to complete!
   # - cmd: nmake /nologo -DEXHAUSTIVE clean all-tests MORE_EXHAUSTIVE=1
 
-# after_test:
-  # - ps: |
-      # $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
-      # Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-      # bash codecov.sh -f "coverage.xml" -t 1eef4895-a479-44ae-aade-af4d1c5dc286
-
 artifacts:
-# IMPORTANT! If the artifact path starts with * surround the value with single quotes.
-
-# WIP: Push the entire PTHREADS-BUILT-{APPVEYOR_BUILD_NUMBER} folder as a single zip archive.
-  - path: 'PTHREADS-BUILT%APPVEYOR_BUILD_VERSION%'
+  - path: 'pthreads-w32%APPVEYOR_BUILD_VERSION%-release'
 
 
 notifications:
+  - provider: Email
+    to:
+    - '{{commitAuthorEmail}}'
   - provider: GitHubPullRequest
     auth_token:
       secure: VwyaJwle6Sl0AuOebFpGCIXiPyC2aOZjH0MZe+i8YlFib7AcqvDkbZQUqKbVuHK5
