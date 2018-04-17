@@ -2,7 +2,10 @@
 
 #include "test.h"
 /* Cheating here - sneaking a peek at library internals */
+#ifndef _MSC_VER
 #include "../config.h"
+#endif
+
 #include "../implement.h"
 
 int

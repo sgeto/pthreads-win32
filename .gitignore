@@ -16,3 +16,15 @@ tests/semaphore.h
 tests/benchlib.o
 tests/SIZES.*
 tests/*.log
+config\.status
+config\.log
+config\.h
+config\.h\.in~
+autom4te\.cache/
+GNUmakefile
+!contrib/QueueUserAPCEx/*makefile
+PTHREADS-BUILT/
+PTHREADS-BUILT-MinGW/
+*.sys
+*.inlined_static_stamp
+pthreads-w32-*-release

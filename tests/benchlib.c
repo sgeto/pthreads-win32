@@ -33,7 +33,9 @@
  *
  */
 
+#ifndef _MSC_VER
 #include "../config.h"
+#endif
 
 #include "pthread.h"
 #include "sched.h"

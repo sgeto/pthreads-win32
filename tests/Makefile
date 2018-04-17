@@ -40,7 +40,7 @@ ECHO	= echo
 TOUCH	= $(ECHO) touched >
 
 # The next path is relative to $BUILD_DIR
-QAPC	= # ..\QueueUserAPCEx\User\quserex.dll
+QAPC	= # ..\contrib\QueueUserAPCEx\User\quserex.dll
 
 CPHDR	= _ptw32.h pthread.h semaphore.h sched.h
 
@@ -49,7 +49,7 @@ OPTIM	= /O2 /Ob0
 XXLIBS	= ws2_32.lib
 
 # C++ Exceptions
-VCEFLAGS	= /EHs /TP /DPtW32NoCatchWarn /D__CLEANUP_CXX
+VCEFLAGS	= /EHs /TP /DPtW32NoCatchWarn /D__CLEANUP_CXX /FI..\winconfig.h
 VCELIB	= pthreadVCE$(DLL_VER).lib
 VCEDLL	= pthreadVCE$(DLL_VER).dll
 VCELIBD	= pthreadVCE$(DLL_VER)d.lib
@@ -61,13 +61,13 @@ VSEDLL	= pthreadVSE$(DLL_VER).dll
 VSELIBD	= pthreadVSE$(DLL_VER)d.lib
 VSEDLLD	= pthreadVSE$(DLL_VER)d.dll
 # C cleanup code
-VCFLAGS	= /D__CLEANUP_C
+VCFLAGS	= /D__CLEANUP_C /FI..\winconfig.h
 VCLIB	= pthreadVC$(DLL_VER).lib
 VCDLL	= pthreadVC$(DLL_VER).dll
 VCLIBD	= pthreadVC$(DLL_VER)d.lib
 VCDLLD	= pthreadVC$(DLL_VER)d.dll
 # C++ Exceptions in application - using VC version of pthreads dll
-VCXFLAGS	= /EHs /TP /D__CLEANUP_C
+VCXFLAGS	= /EHs /TP /D__CLEANUP_C /FI..\winconfig.h
 
 # Defaults
 CPLIB	= $(VCLIB)
@@ -203,26 +203,26 @@ VCX-static-debug VCX-small-static-debug:
 	@ $(MAKE) /E /nologo TEST="$@" CPLIB="$(VCLIBD)" CPDLL="" EHFLAGS="$(VCXFLAGS) /DPTW32_STATIC_LIB" allpassed
 
 clean:
-	if exist *.dll $(RM) *.dll
-	if exist *.lib $(RM) *.lib
-	if exist _ptw32.h $(RM) _ptw32.h
-	if exist pthread.h $(RM) pthread.h
-	if exist semaphore.h $(RM) semaphore.h
-	if exist sched.h $(RM) sched.h
-	if exist *.e $(RM) *.e
-	if exist *.i $(RM) *.i
-	if exist *.obj $(RM) *.obj
-	if exist *.pdb $(RM) *.pdb
-	if exist *.o $(RM) *.o
-	if exist *.asm $(RM) *.asm
-	if exist *.exe $(RM) *.exe
-	if exist *.manifest $(RM) *.manifest
-	if exist *.pass $(RM) *.pass
-	if exist *.bench $(RM) *.bench
-	if exist *.log $(RM) *.log
+	@if exist *.dll $(RM) *.dll
+	@if exist *.lib $(RM) *.lib
+	@if exist _ptw32.h $(RM) _ptw32.h
+	@if exist pthread.h $(RM) pthread.h
+	@if exist semaphore.h $(RM) semaphore.h
+	@if exist sched.h $(RM) sched.h
+	@if exist *.e $(RM) *.e
+	@if exist *.i $(RM) *.i
+	@if exist *.obj $(RM) *.obj
+	@if exist *.pdb $(RM) *.pdb
+	@if exist *.o $(RM) *.o
+	@if exist *.asm $(RM) *.asm
+	@if exist *.exe $(RM) *.exe
+	@if exist *.manifest $(RM) *.manifest
+	@if exist *.pass $(RM) *.pass
+	@if exist *.bench $(RM) *.bench
+	@if exist *.log $(RM) *.log
 
 .c.pass:
-	$(CC) $(EHFLAGS) $(CFLAGS) $(INCLUDES) $*.c /Fe$*.exe /link $(LFLAGS) $(CPLIB) $(XXLIBS)
+	@ $(CC) $(EHFLAGS) $(CFLAGS) $(INCLUDES) $*.c /Fe$*.exe /link $(LFLAGS) $(CPLIB) $(XXLIBS)
 	@ $(ECHO) ... Running $(TEST) test: $*.exe
 	@ .\$*.exe
 	@ $(ECHO) ...... Passed

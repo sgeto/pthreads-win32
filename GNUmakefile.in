@@ -39,10 +39,10 @@ builddir = @builddir@
 VPATH = @srcdir@
 
 # FIXME: Replace these path name references with autoconf standards.
-DESTROOT = ../PTHREADS-BUILT
-DLLDEST	= $(DESTROOT)/bin
-LIBDEST	= $(DESTROOT)/lib
-HDRDEST	= $(DESTROOT)/include
+DESTROOT = PTHREADS-BUILT
+DLLDEST  = $(DESTROOT)/bin
+LIBDEST  = $(DESTROOT)/lib
+HDRDEST  = $(DESTROOT)/include
 # i.e.
 #
 prefix = @prefix@
@@ -168,7 +168,7 @@ GCE_CFLAGS	= $(PTW32_FLAGS) -mthreads
 ## Mingw
 #MAKE		?= make
 DEFS = @DEFS@ -DPTW32_BUILD
-CFLAGS	= $(OPT) $(XOPT) $(ARCH) -I. -I${srcdir} $(DEFS) -Wall
+CFLAGS	= $(OPT) $(XOPT) $(ARCH) -I. -I${srcdir} $(DEFS) -Wall 
 
 OBJEXT = @OBJEXT@
 RESEXT = @OBJEXT@
@@ -201,6 +201,7 @@ PTHREAD_DEF = pthread.def
 help:
 	@ echo "Run one of the following command lines:"
 	@ echo "$(MAKE) clean all                      (build targets GC, GCE, GC-static, GCE-static)"
+	@ echo "$(MAKE) clean install                  (to install targets GC, GCE, GC-static, GCE-static ["$(MAKE) clean all" must be run first!!!])"
 	@ echo "$(MAKE) clean all-tests                (build and test all non-debug targets below)"
 	@ echo "$(MAKE) clean GC                       (to build the GNU C dll with C cleanup code)"
 	@ echo "$(MAKE) clean GC-debug                 (to build the GNU C debug dll with C cleanup code)"

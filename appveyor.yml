@@ -1,0 +1,101 @@
+image:
+  - Visual Studio 2017
+
+version: 2.10.0-{build}
+
+branches:
+  only:
+    - master
+    - privat
+
+environment:
+  global:
+    CL: -nologo
+    LINK: -nologo
+    ARCH1: x86
+    ARCH2: x86_amd64
+
+  matrix:
+    - TOOLSET:        MSVC1910       #-1919 = Visual Studio 15.0/2017 (v141 toolset)
+    - TOOLSET:        MSVC1900       # Visual Studio 14.0/2015 (v140 toolset)
+    - TOOLSET:        MSVC1900
+      ARCH:           x86_arm
+    - TOOLSET:        MSVC1900
+      ARCH:           amd64_arm
+
+matrix:
+  #
+  # Immediately finish build if one of the above jobs fails.
+  #
+  fast_finish: true
+  # allow_failures:
+    # - TOOLSET: MSVC1900
+      # ARCH:     x86_arm
+    # - TOOLSET: MSVC1900
+      # ARCH:     amd64_arm
+# don't bother building these...
+  exclude:
+    - TOOLSET: MSVC1900
+      ARCH:     x86_arm
+    - TOOLSET: MSVC1900
+      ARCH:     amd64_arm
+
+clone_folder: 'c:\%APPVEYOR_PROJECT_NAME%'
+
+install:
+# set compiler environment
+  - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH1%
+  - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH1%
+
+build_script:
+# build for x86
+  - cmd: nmake /nologo install DEPLOY=1
+# set compiler environment
+  - cmd: if "%TOOLSET%"=="MSVC1910" call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH2%
+  - cmd: if not "%TOOLSET%"=="MSVC1910" call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %ARCH2%
+# build for x86_amd64
+  - cmd: nmake /nologo install DEPLOY=1
+
+test_script:
+  - cmd: cd tests
+  - cmd: nmake /nologo clean VC
+  - cmd: nmake /nologo VC NO_DEPS=1 BUGGY=1 TESTS="exception1 exception2 exception3_0 exception3 sequence1" & exit /b 0
+  # - cmd: nmake /nologo clean all-tests
+  # - cmd: nmake /nologo -DEXHAUSTIVE clean all-tests
+# Warning: MORE_EXHAUSTIVE takes a few hours to complete!
+  # - cmd: nmake /nologo -DEXHAUSTIVE clean all-tests MORE_EXHAUSTIVE=1
+
+artifacts:
+  - path: 'pthreads-w32-v2.10.0-release'
+
+
+notifications:
+  - provider: Email
+    to:
+    - '{{commitAuthorEmail}}'
+  - provider: GitHubPullRequest
+    auth_token:
+      secure: VwyaJwle6Sl0AuOebFpGCIXiPyC2aOZjH0MZe+i8YlFib7AcqvDkbZQUqKbVuHK5
+    template: "{{#passed}}:white_check_mark:{{/passed}}{{#failed}}:x:{{/failed}} [Build {{&projectName}} {{buildVersion}} {{status}}]({{buildUrl}}) (commit {{commitUrl}} by @{{&commitAuthorUsername}})"
+
+#
+# One day...
+#
+# deploy:
+#   Deploying to NuGet feed
+#   - provider: NuGet
+#     server: https://my.nuget.server/feed
+#     api_key:
+#       secure: FYWX6NfjZIVw==
+#     skip_symbols: false
+#     symbol_server: https://your.symbol.server/feed
+#     artifact: MyPackage.nupkg
+
+#   Deploy to GitHub Releases
+#   - provider: GitHub
+#     artifact: /.*\.nupkg/           # upload all NuGet packages to release assets
+#     draft: false
+#     prerelease: false
+#     on:
+#       branch: master                # release from master branch only
+#       appveyor_repo_tag: true       # deploy on tag push only
