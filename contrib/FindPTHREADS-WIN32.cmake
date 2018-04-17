@@ -67,7 +67,8 @@
 # Quasi Self-Promotion
 # --------------------
 #
-# - coming soon -
+# https://github.com/sgeto/pthreads-win32/blob/privat/README.md
+# https://ci.appveyor.com/project/sgeto/pthreads-win32
 
 
 # Define a default exception scheme to link against

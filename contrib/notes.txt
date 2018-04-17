@@ -1,0 +1,29 @@
+Severity	Code	Description	Project	File	Line	Suppression State
+Error	LNK2019	unresolved external symbol pthread_setcancelstate referenced in function daemon_serviceloop	rpcapd	C:\Users\Ali\projects\libpcap\buildVS\rpcapd\daemon.obj	1	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error	C2440	'initializing': cannot convert from 'int' to 'pthread_t'	rpcapd	C:\Users\Ali\projects\libpcap\rpcapd\daemon.c	115	
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error	C2083	struct comparison illegal	rpcapd	C:\Users\Ali\projects\libpcap\rpcapd\daemon.c	424	
+
+
+Look at the declaration for 'pthread_t' in pthread.h.  It's a structure, 
+not a pointer or an integer: 
+
+/* 
+ * Generic handle type - intended to extend uniqueness beyond 
+ * that available with a simple pointer. It should scale for either 
+ * IA-32 or IA-64. 
+ */ 
+typedef struct { 
+    void * p;                   /* Pointer to actual object */ 
+    unsigned int x;             /* Extra information - reuse count etc 
+*/ 
+} ptw32_handle_t; 
+
+typedef ptw32_handle_t pthread_t; 
+
+I can't say I like this either.  All other implementations I've seen use 
+a pointer for pthread_t.  It must be a Windows thing. 
