@@ -17,6 +17,8 @@ Also known as "pthreads-win32", POSIX Threads for Windows implements a large sub
 - This is a personal GitHub mirror of: https://git.code.sf.net/p/pthreads4w/code
 Actually the master branch is the mirror, while the so-called "privat" branch holds a modified fork with a few, mostly minor, changes to suite *my* environment.
 
+"Privat" Branch: https://github.com/sgeto/pthreads-win32/tree/privat
+
 Diff: https://github.com/sgeto/pthreads-win32/pull/1.diff
 
 Patch: https://github.com/sgeto/pthreads-win32/pull/1.patch
