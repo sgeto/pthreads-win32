@@ -1,23 +1,12 @@
 image:
   - Visual Studio 2017
 
-# XXX isn't it 2.11.0?
 version: -v2.10.0
 
-# Only build the 'privat' branch.
 branches:
   only:
+    - master
     - privat
-
-# Skipping commits affecting these files
-skip_commits:
-   files:
-    - '**/*.README.*'
-    - '**/*.md'
-    - '**/*.txt'
-    - '**/*.png'
-    - '**/*.jpg'
-    - '**/*.html'
 
 environment:
   global:
